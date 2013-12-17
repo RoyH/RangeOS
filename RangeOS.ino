@@ -91,18 +91,14 @@ void loop()
     displayLines("Input Time : ", input);
     if (KeyCheck() == 'n') {
       //get current key
-
-
-
       //Serial.println(currentKey);
       if (input.length() < 4) {
         input = input += currentKey;
-
         displayLines("Input Time : ", input);
       }
-
-
     }
+    
+    
     if (currentKey == "*") {
           input = input.substring(0, input.length() - 1);
        displayLines("Input Time : ", input);
@@ -143,8 +139,6 @@ void loop()
   
   
   
-   
-
 
   }
 
@@ -154,49 +148,7 @@ void loop()
 
     timerSeq(input.toInt(),true,6,5);
 
-/*
-    for(int i = input.toInt(); i >= 0;i--){
-      
-      //display code
-      displayLines("Time Remaining", (String) i);
-      shifter.display(i);
-      
-      
-      // check if less than 5
-      if(i <= 5 && i != 0) {
-        tone(5,2028,70); 
 
-      } 
-      else {
-        if(i == 0){
-          tone(5,1700,700);
-          state = COMPLETE_SCREEN;
-          }
-        
-        
-        
-        
-      }
-      
-      
-      // poling loop delay.
-      for(int z = 0; z <= 455; z++) {      
-        if(KeyCheck() == '*') {
-        i = 0;
-        state = ABORT_SCREEN;
-        tone(5,1800,70);
-        delay(200);
-        tone(5,1800,70);
-        delay(200);
-        tone(5,1800,70);
-        
-        }
-        
-      delay(2);
-     
-      }
-    }    
-  */  
   }   
 
   while(state==COMPLETE_SCREEN) {
