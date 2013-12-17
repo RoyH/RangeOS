@@ -16,16 +16,16 @@ const byte COLS = 3; // Three columns
 // Define the Keymap
 char keys[ROWS][COLS] = {
   {
-    '1','2','3'        }
+    '1','2','3'            }
   ,
   {
-    '4','5','6'        }
+    '4','5','6'            }
   ,
   {
-    '7','8','9'        }
+    '7','8','9'            }
   ,
   {
-    '*','0','#'        }
+    '*','0','#'            }
 };
 // Connect keypad ROW0, ROW1, ROW2 and ROW3 to these Arduino pins.
 byte rowPins[ROWS] = {
@@ -68,10 +68,13 @@ int CONFIRM_SCREEN = 3;
 int MAINTIMER =4;
 int COMPLETE_SCREEN = 5;
 int ABORT_SCREEN = 6;
+int BEEP_SCREEN = 7;
+int LEAD_IN = 8;
 
 int state = HOME_SCREEN; //setting the initial state
 String input = "";
 String currentKey = "";
+boolean beep;
 
 
 void loop()
@@ -97,16 +100,16 @@ void loop()
         displayLines("Input Time : ", input);
       }
     }
-    
-    
+
+
     if (currentKey == "*") {
-          input = input.substring(0, input.length() - 1);
-       displayLines("Input Time : ", input);
+      input = input.substring(0, input.length() - 1);
+      displayLines("Input Time : ", input);
     }
-    
+
     // Case if currentKey is #!
     if (currentKey == "#") {
-      
+
       if (input == "") {
         displayLines("WARNING", "Input a Number!!");
         delay(1000);   
@@ -114,7 +117,7 @@ void loop()
       } 
       else {
 
-        state = CONFIRM_SCREEN;
+        state = BEEP_SCREEN;
         lcd.clear();
 
       }
@@ -123,58 +126,88 @@ void loop()
 
   }
 
+  while(state == BEEP_SCREEN) {
+    displayLines("BEEP at 5 secs?" ,"1 - NO, 2 - YES");
+
+
+    switch(KeyCheck()) {
+      case('*') :
+      state = INPUT_ARROWTIME;
+      break;
+
+      case('n') :
+      if (currentKey == "1") {
+        beep = false;
+        state = CONFIRM_SCREEN;
+      }
+      else if (currentKey == "2") {
+        beep = true;
+        state = CONFIRM_SCREEN;
+      }
+      break;
+
+    }
+
+
+
+
+  }
+
+
 
   while(state == CONFIRM_SCREEN) {
     displayLines("Time Set : " + input,"Press # to START");
 
-  
+
     switch(KeyCheck()) {
       case('*') :
-        state = INPUT_ARROWTIME;
-        break;
+      state = BEEP_SCREEN;
+      break;
       case('#') :
-        state = MAINTIMER;
-        break;
+      state = LEAD_IN;
+      break;
     }
-  
-  
-  
 
   }
+
+  while(state == LEAD_IN) {
+     leadinSeq(10,6,MAINTIMER);
+
+  }  
 
   while(state == MAINTIMER) {
     //displayLines("test","");  
 
 
-    timerSeq(input.toInt(),true,6,5);
+    timerSeq(input.toInt(),beep,6,5);
 
 
   }   
 
   while(state==COMPLETE_SCREEN) {
     displayLines("End Complete","Home-* | Rest-#");
-       switch(KeyCheck()) {
-         case('*'):
-         state = HOME_SCREEN;
-         break;
-         case('#'):
-         state = 4;
-         break;
-       }
-    
+    switch(KeyCheck()) {
+      case('*'):
+      state = HOME_SCREEN;
+      break;
+      case('#'):
+      state = LEAD_IN;
+      break;
+    }
+
   } 
-  
-   while(state==ABORT_SCREEN) {
+
+  while(state==ABORT_SCREEN) {
     displayLines("Aborted","Home-* | Rest-#");
-       switch(KeyCheck()) {
-         case('*'):
-         state = HOME_SCREEN;
-         break;
-         case('#'):
-         state = 4;
-         break;
-       }
-    
+    switch(KeyCheck()) {
+      case('*'):
+      state = HOME_SCREEN;
+      break;
+      case('#'):
+      state = LEAD_IN;
+      break;
+    }
+
   } 
   // resets current key at every loop.
   currentKey == ""; 
@@ -251,33 +284,37 @@ void displayLines(String line1, String line2) {
 
 
 void timerSeq(int time, boolean beep, int abortState, int completeState) {
-      for(int i = time; i >= 0;i--){
-      
-      //display code
-      displayLines("Time Remaining", (String) i);
-      shifter.display(i);
-      
-      
-      // check if less than 5
-      if(i <= 5 && i != 0 && beep == true) {
-        tone(5,2028,70); 
+  for(int i = time; i >= 0;i--){
 
-      } 
-      else {
-        if(i == 0){
-          tone(5,1700,700);
-          state = completeState;
-          }
-        
-        
-        
-        
+    //display code
+    displayLines("SHOOTING TIME", (String) i);
+    shifter.display(i);
+
+
+    // check if less than 5
+    if(i <= 5 && i != 0 && beep == true) {
+      tone(5,2028,70); 
+
+    } 
+    else {
+      if(i == 0){
+        for(int j = 1; j <= 3; j++) {
+          tone(5,2028,70);
+          delay(200);
+
+        }
+        state = completeState;
       }
-      
-      
-      // poling loop delay.
-      for(int z = 0; z <= 455; z++) {      
-        if(KeyCheck() == '*') {
+
+
+
+
+    }
+
+
+    // poling loop delay.
+    for(int z = 0; z <= 455; z++) {      
+      if(KeyCheck() == '*') {
         i = 0;
         state = abortState;
         tone(5,1800,70);
@@ -285,15 +322,62 @@ void timerSeq(int time, boolean beep, int abortState, int completeState) {
         tone(5,1800,70);
         delay(200);
         tone(5,1800,70);
-        
-        }
-        
-      delay(2);
-     
+
       }
-    } 
+
+      delay(2);
+
+    }
+  } 
 
 }
+
+void leadinSeq(int time, int abortState, int completeState) {
+  tone(5,2000,500);
+  for(int i = time; i >= 0;i--){
+
+    //display code
+    displayLines("Lead in", (String) i);
+    shifter.display(i);
+
+
+
+    if(i == 0){
+      
+        tone(5,1900,70);
+        delay(200);
+        tone(5,1900,70);
+      
+      state = completeState;
+    } else {
+    // Polling Loop delay
+    for(int z = 0; z <= 455; z++) {      
+      if(KeyCheck() == '*') {
+        i = 0;
+        state = abortState;
+        tone(5,1800,70);
+        delay(200);
+        tone(5,1800,70);
+        delay(200);
+        tone(5,1800,70);
+
+      }
+
+      delay(2);
+
+    }
+    }
+
+
+  }
+
+
+
+
+} 
+
+
+
 
 
 
