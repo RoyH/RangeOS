@@ -1,0 +1,13 @@
+<mm_project serial_port="COM5" board="Arduino Mega 2560 or Mega ADK" programmer="AVRISP mkII" includePaths="" libPaths="" libs="" default="yes" useCodeAutomation="yes" linkPrintfVersion="1" serialPortSpeed="" >
+  <files>
+    <file name="rangeos_main.h" open="no" />
+    <file name="RangeOS.cpp" open="yes" />
+  </files>
+  <extras>
+  </extras>
+  <externals>
+    <external name="C:\Program Files (x86)\Arduino\libraries\Adafruit_CharacterOLED\Adafruit_CharacterOLED.cpp" />
+    <external name="C:\Program Files (x86)\Arduino\libraries\Keypad\Keypad.cpp" />
+    <external name="C:\Program Files (x86)\Arduino\libraries\Keypad\utility\Key.cpp" />
+  </externals>
+</mm_project>
